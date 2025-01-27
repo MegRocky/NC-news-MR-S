@@ -1,4 +1,3 @@
-const { selectEndpointsData } = require("../models/model-get-api");
 const endpointsData = require("../endpoints.json");
 
 exports.getApi = (req, res, next) => {
