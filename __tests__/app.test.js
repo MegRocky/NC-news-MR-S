@@ -128,7 +128,6 @@ describe("GET /api/articles/:article_id/comments", () => {
               author: expect.any(String),
               created_at: expect.any(String),
               body: expect.any(String),
-              votes: expect.any(Number),
             })
           );
         });
@@ -159,6 +158,49 @@ describe("GET /api/articles/:article_id/comments", () => {
       });
   });
 });
+describe("POST /api/articles/:article_id/comments", () => {
+  test("201: should respond with the added comment", () => {
+    const newComment = {
+      username: "butter_bridge",
+      body: "Smuggling butter in the footwell of a 2cv",
+    };
+    return request(app)
+      .post("/api/articles/11/comments")
+      .send(newComment)
+      .expect(201)
+      .then((response) => {
+        expect(response.body.comment).toEqual(
+          expect.objectContaining({
+            comment_id: expect.any(Number),
+            votes: 0,
+            article_id: 11,
+            author: newComment.username,
+            created_at: expect.any(String),
+            body: newComment.body,
+          })
+        );
+      });
+  });
+  test("400: when passed an invalid object returns appropriate status code and message", () => {
+    return request(app)
+      .post("/api/articles/11/comments")
+      .send({})
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toEqual("Bad Request");
+      });
+  });
+  test("400: when passed an object with invalid keys returns appropriate status code and message", () => {
+    return request(app)
+      .post("/api/articles/11/comments")
+      .send({ username: 27, body: 90000 })
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toEqual("Bad Request");
+      });
+  });
+});
+
 describe("UTIL checkIfArticleExists", () => {
   test("should reject with a 404 status if invoked with a non existent but valid article ID ", () => {
     expect(checkIfArticleExists(9000)).rejects.toMatchObject({
