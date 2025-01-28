@@ -3,6 +3,10 @@ const {
   selectArticleById,
   selectArticles,
 } = require("../models/model-select-article.js");
+
+const {
+  selectCommentsByArticleId,
+} = require("../models/model-select-comments.js");
 const selectTopics = require("../models/model-select-topics.js");
 
 exports.getApi = (req, res, next) => {
@@ -40,6 +44,18 @@ exports.getArticles = (req, res, next) => {
   selectArticles()
     .then((articles) => {
       res.status(200).send({ articles: articles });
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
+exports.getCommentsByArticleId = (req, res, next) => {
+  const articleId = req.params.article_id;
+
+  selectCommentsByArticleId(articleId)
+    .then((comments) => {
+      res.status(200).send({ comments: comments });
     })
     .catch((err) => {
       next(err);

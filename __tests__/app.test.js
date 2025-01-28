@@ -5,6 +5,7 @@ const request = require("supertest");
 const db = require("../db/connection.js");
 const seed = require("../db/seeds/seed.js");
 const testData = require("../db/data/test-data/index.js");
+const { checkIfArticleExists } = require("../models/model-utils.js");
 /* Set up your beforeEach & afterAll functions here */
 beforeEach(() => {
   return seed(testData);
@@ -105,6 +106,68 @@ describe("GET /api/articles", () => {
           );
         });
       });
+  });
+});
+describe("GET /api/articles/:article_id/comments", () => {
+  test("200: responds with an array of comment objects,sorted by date in decending order", () => {
+    return request(app)
+      .get("/api/articles/1/comments")
+      .expect(200)
+      .then((res) => {
+        expect(res.body.comments.length).toBe(11);
+        expect(res.body.comments).toBeSorted({
+          descending: true,
+          key: "created_at",
+        });
+        res.body.comments.forEach((comment) => {
+          expect(comment).toEqual(
+            expect.objectContaining({
+              comment_id: expect.any(Number),
+              votes: expect.any(Number),
+              article_id: expect.any(Number),
+              author: expect.any(String),
+              created_at: expect.any(String),
+              body: expect.any(String),
+              votes: expect.any(Number),
+            })
+          );
+        });
+      });
+  });
+  test("400: sends an appropriate status and error message when given an invalid id", () => {
+    return request(app)
+      .get("/api/articles/bananas/comments")
+      .expect(400)
+      .then((res) => {
+        expect(res.body.msg).toEqual("Bad Request");
+      });
+  });
+  test("404: sends an appropriate status and error message when given a valid but non existent id", () => {
+    return request(app)
+      .get("/api/articles/9000/comments")
+      .expect(404)
+      .then((res) => {
+        expect(res.body.msg).toEqual("Article Not Found");
+      });
+  });
+  test("200: when passed a legitamate article id for an article with no comments response array is empty", () => {
+    return request(app)
+      .get("/api/articles/11/comments")
+      .expect(200)
+      .then((res) => {
+        expect(res.body.comments).toEqual([]);
+      });
+  });
+});
+describe("UTIL checkIfArticleExists", () => {
+  test("should reject with a 404 status if invoked with a non existent but valid article ID ", () => {
+    expect(checkIfArticleExists(9000)).rejects.toMatchObject({
+      status: 404,
+      msg: "Article Not Found",
+    });
+  });
+  test("should return undefined if passed a legitimate article ID", () => {
+    expect(checkIfArticleExists(11)).resolves.toBe(undefined);
   });
 });
 
