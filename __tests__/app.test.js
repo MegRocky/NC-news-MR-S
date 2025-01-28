@@ -79,6 +79,34 @@ describe("GET: /api/articles/:article_id", () => {
       });
   });
 });
+describe("GET /api/articles", () => {
+  test("200: responds with an array of article objects,sorted by date in decending order", () => {
+    return request(app)
+      .get("/api/articles")
+      .expect(200)
+      .then((res) => {
+        expect(res.body.articles).toBeSorted({
+          descending: true,
+          key: "created_at",
+        });
+        expect(res.body.articles.length).toBe(13);
+        res.body.articles.forEach((article) => {
+          expect(article).toEqual(
+            expect.objectContaining({
+              author: expect.any(String),
+              title: expect.any(String),
+              article_id: expect.any(Number),
+              topic: expect.any(String),
+              created_at: expect.any(String),
+              votes: expect.any(Number),
+              article_img_url: expect.any(String),
+              comment_count: expect.any(Number),
+            })
+          );
+        });
+      });
+  });
+});
 
 describe("404: not found", () => {
   test("should return 404 with appropriate message when given an non-existant endpoint", () => {

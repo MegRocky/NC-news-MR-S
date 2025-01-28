@@ -1,5 +1,8 @@
 const endpointsData = require("../endpoints.json");
-const selectArticleById = require("../models/model-select-article.js");
+const {
+  selectArticleById,
+  selectArticles,
+} = require("../models/model-select-article.js");
 const selectTopics = require("../models/model-select-topics.js");
 
 exports.getApi = (req, res, next) => {
@@ -26,8 +29,17 @@ exports.getArticleById = (req, res, next) => {
 
   selectArticleById(articleId)
     .then((article) => {
-      console.log({ article: article.rows[0] });
       res.status(200).send({ article: article.rows[0] });
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
+exports.getArticles = (req, res, next) => {
+  selectArticles()
+    .then((articles) => {
+      res.status(200).send({ articles: articles });
     })
     .catch((err) => {
       next(err);
