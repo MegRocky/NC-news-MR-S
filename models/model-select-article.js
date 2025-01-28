@@ -1,15 +1,13 @@
 const db = require("../db/connection.js");
+const { checkIfArticleExists } = require("./model-utils.js");
 
 function selectArticleById(id) {
-  return db
-    .query("SELECT * FROM articles WHERE article_id = $1", [id])
+  return checkIfArticleExists(id)
+    .then(() => {
+      return db.query("SELECT * FROM articles WHERE article_id = $1", [id]);
+    })
     .then((res) => {
-      if (res.rowCount === 0) {
-        res.msg = "Article Not Found";
-        return Promise.reject(res);
-      } else {
-        return res;
-      }
+      return res;
     });
 }
 
