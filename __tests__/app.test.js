@@ -200,6 +200,64 @@ describe("POST /api/articles/:article_id/comments", () => {
       });
   });
 });
+describe("PATCH /api/articles/:article_id", () => {
+  test("200: increments votes with the object passed and returns the updated article", () => {
+    return request(app)
+      .patch("/api/articles/11")
+      .send({ inc_votes: 1 })
+      .expect(200)
+      .then((res) => {
+        expect(res.body.article).toEqual({
+          author: "icellusedkars",
+          title: "Am I a cat?",
+          article_id: 11,
+          body: "Having run out of ideas for articles, I am staring at the wall blankly, like a cat. Does this make me a cat?",
+          topic: "mitch",
+          created_at: "2020-01-15T22:21:00.000Z",
+          votes: 1,
+          article_img_url:
+            "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+        });
+      });
+  });
+  test("200: reduces votes if passed a miuns number", () => {
+    return request(app)
+      .patch("/api/articles/11")
+      .send({ inc_votes: -1 })
+      .expect(200)
+      .then((res) => {
+        expect(res.body.article).toEqual({
+          author: "icellusedkars",
+          title: "Am I a cat?",
+          article_id: 11,
+          body: "Having run out of ideas for articles, I am staring at the wall blankly, like a cat. Does this make me a cat?",
+          topic: "mitch",
+          created_at: "2020-01-15T22:21:00.000Z",
+          votes: -1,
+          article_img_url:
+            "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+        });
+      });
+  });
+  test("400: when passed an invalid object returns appropriate status code and message", () => {
+    return request(app)
+      .patch("/api/articles/11")
+      .send({})
+      .expect(400)
+      .then((res) => {
+        expect(res.body.msg).toEqual("Bad Request");
+      });
+  });
+  test("400: when passed an object with an invalid value returns appropriate status code and message", () => {
+    return request(app)
+      .patch("/api/articles/11")
+      .send({ inc_votes: "buttons" })
+      .expect(400)
+      .then((res) => {
+        expect(res.body.msg).toEqual("Bad Request");
+      });
+  });
+});
 
 describe("UTIL checkIfArticleExists", () => {
   test("should reject with a 404 status if invoked with a non existent but valid article ID ", () => {
