@@ -5,6 +5,8 @@ const request = require("supertest");
 const db = require("../db/connection.js");
 const seed = require("../db/seeds/seed.js");
 const testData = require("../db/data/test-data/index.js");
+const { Stream } = require("supertest/lib/test.js");
+
 /* Set up your beforeEach & afterAll functions here */
 beforeEach(() => {
   return seed(testData);
@@ -101,6 +103,33 @@ describe("GET /api/articles", () => {
               votes: expect.any(Number),
               article_img_url: expect.any(String),
               comment_count: expect.any(Number),
+            })
+          );
+        });
+      });
+  });
+});
+describe("GET /api/articles/:article_id/comments", () => {
+  test("200: responds with an array of comment objects,sorted by date in decending order", () => {
+    return request(app)
+      .get("/api/articles/1/comments")
+      .expect(200)
+      .then((res) => {
+        expect(res.body.comments.length).toBe(11);
+        expect(res.body.comments).toBeSorted({
+          descending: true,
+          key: "created_at",
+        });
+        res.body.comments.forEach((comment) => {
+          expect(comment).toEqual(
+            expect.objectContaining({
+              comment_id: expect.any(Number),
+              votes: expect.any(Number),
+              article_id: expect.any(Number),
+              author: expect.any(String),
+              created_at: expect.any(String),
+              body: expect.any(String),
+              votes: expect.any(Number),
             })
           );
         });
