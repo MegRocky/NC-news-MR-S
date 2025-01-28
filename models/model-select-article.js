@@ -8,7 +8,7 @@ function selectArticleById(id) {
         res.msg = "Article Not Found";
         return Promise.reject(res);
       } else {
-        return res;
+        return res.rows[0];
       }
     });
 }
