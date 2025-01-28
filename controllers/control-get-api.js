@@ -33,7 +33,7 @@ exports.getArticleById = (req, res, next) => {
 
   selectArticleById(articleId)
     .then((article) => {
-      res.status(200).send({ article: article.rows[0] });
+      res.status(200).send({ article: article });
     })
     .catch((err) => {
       next(err);
