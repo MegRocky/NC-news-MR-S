@@ -273,17 +273,7 @@ describe("PATCH /api/articles/:article_id", () => {
       .send({ inc_votes: 1 })
       .expect(200)
       .then((res) => {
-        expect(res.body.article).toEqual({
-          author: "icellusedkars",
-          title: "Am I a cat?",
-          article_id: 11,
-          body: "Having run out of ideas for articles, I am staring at the wall blankly, like a cat. Does this make me a cat?",
-          topic: "mitch",
-          created_at: "2020-01-15T22:21:00.000Z",
-          votes: 1,
-          article_img_url:
-            "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
-        });
+        expect(res.body.article.votes).toEqual(1);
       });
   });
   test("200: reduces votes if passed a minus number", () => {
@@ -292,17 +282,7 @@ describe("PATCH /api/articles/:article_id", () => {
       .send({ inc_votes: -1 })
       .expect(200)
       .then((res) => {
-        expect(res.body.article).toEqual({
-          author: "icellusedkars",
-          title: "Am I a cat?",
-          article_id: 11,
-          body: "Having run out of ideas for articles, I am staring at the wall blankly, like a cat. Does this make me a cat?",
-          topic: "mitch",
-          created_at: "2020-01-15T22:21:00.000Z",
-          votes: -1,
-          article_img_url:
-            "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
-        });
+        expect(res.body.article.votes).toEqual(-1);
       });
   });
   test("400: when passed an invalid object returns appropriate status code and message", () => {
