@@ -332,6 +332,26 @@ describe("DELETE /api/comments/:comment_id", () => {
   });
 });
 
+describe("GET /api/users", () => {
+  test("200: responds with an array of user objects,sorted by date in decending order", () => {
+    return request(app)
+      .get("/api/users")
+      .expect(200)
+      .then((res) => {
+        expect(res.body.users.length).toBe(4);
+        res.body.users.forEach((article) => {
+          expect(article).toEqual(
+            expect.objectContaining({
+              username: expect.any(String),
+              name: expect.any(String),
+              avatar_url: expect.any(String),
+            })
+          );
+        });
+      });
+  });
+});
+
 describe("UTIL checkIfArticleExists", () => {
   test("should reject with a 404 status if invoked with a non existent but valid article ID ", () => {
     expect(checkIfArticleExists(9000)).rejects.toMatchObject({

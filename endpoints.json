@@ -94,5 +94,17 @@
         "article_img_url": "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700"
       }
     }
+  },
+  "GET /api/users": {
+    "description": "returns an array of user objects",
+    "exampleResponse": {
+      "users": [
+        {
+          "avatar_url": "https://www.healthytherapies.com/wp-content/uploads/2016/06/Lime3.jpg",
+          "name": "jonny",
+          "username": "butter_bridge"
+        }
+      ]
+    }
   }
 }
