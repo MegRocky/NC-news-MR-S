@@ -7,7 +7,11 @@ const {
 function insertCommentsByArticleId(articleId, newComment) {
   return checkIfArticleExists(articleId)
     .then(() => {
-      return checkIfValidUserExists(newComment.username);
+      if (newComment.username && newComment.body) {
+        return checkIfValidUserExists(newComment.username);
+      } else {
+        return Promise.reject({ status: 400, msg: "Bad Request" });
+      }
     })
     .then(() => {
       return db.query(
