@@ -7,22 +7,22 @@ function checkIfArticleExists(id) {
     .then((articleQ) => {
       if (articleQ.rowCount === 0) {
         return Promise.reject({ status: 404, msg: "Article Not Found" });
+      } else {
+        return { approved: true };
       }
     });
 }
 
 function checkIfValidUserExists(username) {
-  if (typeof username !== "string") {
-    return Promise.reject({ status: 400, msg: "Bad Request" });
-  } else {
-    return db
-      .query("SELECT * FROM users WHERE username = $1", [username])
-      .then((userQ) => {
-        if (userQ.rowCount === 0) {
-          return Promise.reject({ status: 404, msg: "User Not Found" });
-        }
-      });
-  }
+  return db
+    .query("SELECT * FROM users WHERE username = $1", [username])
+    .then((userQ) => {
+      if (userQ.rowCount === 0) {
+        return Promise.reject({ status: 404, msg: "User Not Found" });
+      } else {
+        return { approved: true };
+      }
+    });
 }
 
 function checkIfCommentExists(commentId) {
@@ -32,7 +32,7 @@ function checkIfCommentExists(commentId) {
       if (commentQ.rowCount === 0) {
         return Promise.reject({ status: 404, msg: "Comment Not Found" });
       } else {
-        return;
+        return { approved: true };
       }
     });
 }

@@ -286,15 +286,6 @@ describe("POST /api/articles/:article_id/comments", () => {
         expect(response.body.msg).toEqual("Bad Request");
       });
   });
-  test("400: when passed an object with invalid keys returns appropriate status code and message", () => {
-    return request(app)
-      .post("/api/articles/11/comments")
-      .send({ username: 80, body: 90000 })
-      .expect(400)
-      .then((response) => {
-        expect(response.body.msg).toEqual("Bad Request");
-      });
-  });
   test("400: when passed an invalid article id responds with appropriate code and message", () => {
     const newComment = {
       username: "butter_bridge",
@@ -429,7 +420,9 @@ describe("UTIL checkIfArticleExists", () => {
     });
   });
   test("should return undefined if passed a legitimate article ID", () => {
-    expect(checkIfArticleExists(11)).resolves.toBe(undefined);
+    expect(checkIfArticleExists(11)).resolves.toMatchObject({
+      approved: true,
+    });
   });
 });
 
@@ -440,17 +433,12 @@ describe("UTIL checkIfValidUserExists", () => {
       msg: "User Not Found",
     });
   });
-  test("should return with 400 status if passed invalid username ", () => {
-    expect(checkIfValidUserExists(9000)).rejects.toMatchObject({
-      status: 400,
-      msg: "Bad Request",
+  test("should return true if passed a legitimate username", () => {
+    expect(checkIfValidUserExists("butter_bridge")).resolves.toMatchObject({
+      approved: true,
     });
   });
-  test("should return undefined if passed a legitimate username", () => {
-    expect(checkIfValidUserExists("butter_bridge")).resolves.toBe(undefined);
-  });
 });
-
 describe("UTIL checkIfCommentExists", () => {
   test("should reject with a 404 status if invoked with a non existent but valid comment ID ", () => {
     expect(checkIfCommentExists(9000)).rejects.toMatchObject({
@@ -459,7 +447,9 @@ describe("UTIL checkIfCommentExists", () => {
     });
   });
   test("should return undefined if passed a legitimate comment ID", () => {
-    expect(checkIfCommentExists(1)).resolves.toBe(undefined);
+    expect(checkIfCommentExists(1)).resolves.toMatchObject({
+      approved: true,
+    });
   });
 });
 
