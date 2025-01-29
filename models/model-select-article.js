@@ -4,7 +4,10 @@ const { checkIfArticleExists } = require("./model-utils.js");
 function selectArticleById(id) {
   return checkIfArticleExists(id)
     .then(() => {
-      return db.query("SELECT * FROM articles WHERE article_id = $1", [id]);
+      return db.query(
+        "SELECT articles.author,title,articles.body,articles.article_id,topic,articles.created_at,articles.votes,article_img_url,CAST(COUNT(comments.comment_id) AS int) AS comment_count  FROM articles LEFT JOIN comments ON comments.article_id = articles.article_id WHERE articles.article_id = $1 GROUP BY articles.article_id;",
+        [id]
+      );
     })
     .then((res) => {
       return res.rows[0];
@@ -37,7 +40,7 @@ function selectArticles(order = "desc", sortedBy = "created_at", topic) {
   } else {
     queryStr += groupByArticle;
     queryStr += `ORDER BY ${sortedBy} ${order}`;
-    console.log(queryValues, queryStr);
+
     return db.query(queryStr, queryValues).then((res) => {
       return res.rows;
     });
