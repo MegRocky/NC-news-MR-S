@@ -5,7 +5,10 @@ const request = require("supertest");
 const db = require("../db/connection.js");
 const seed = require("../db/seeds/seed.js");
 const testData = require("../db/data/test-data/index.js");
-const { checkIfArticleExists } = require("../models/model-utils.js");
+const {
+  checkIfArticleExists,
+  checkIfValidUserExists,
+} = require("../models/model-utils.js");
 /* Set up your beforeEach & afterAll functions here */
 beforeEach(() => {
   return seed(testData);
@@ -168,8 +171,8 @@ describe("POST /api/articles/:article_id/comments", () => {
       .post("/api/articles/11/comments")
       .send(newComment)
       .expect(201)
-      .then((response) => {
-        expect(response.body.comment).toEqual(
+      .then((res) => {
+        expect(res.body.comment).toEqual(
           expect.objectContaining({
             comment_id: expect.any(Number),
             votes: 0,
@@ -177,6 +180,29 @@ describe("POST /api/articles/:article_id/comments", () => {
             author: newComment.username,
             created_at: expect.any(String),
             body: newComment.body,
+          })
+        );
+      });
+  });
+  test("201:should ignore addtional properties on the body of comment request", () => {
+    const newCommentExtraProperty = {
+      username: "butter_bridge",
+      body: "Smuggling butter in the footwell of a 2cv",
+      location: "French alsace border",
+    };
+    return request(app)
+      .post("/api/articles/11/comments")
+      .send(newCommentExtraProperty)
+      .expect(201)
+      .then((res) => {
+        expect(res.body.comment).toEqual(
+          expect.objectContaining({
+            comment_id: expect.any(Number),
+            votes: 0,
+            article_id: 11,
+            author: newCommentExtraProperty.username,
+            created_at: expect.any(String),
+            body: newCommentExtraProperty.body,
           })
         );
       });
@@ -193,10 +219,49 @@ describe("POST /api/articles/:article_id/comments", () => {
   test("400: when passed an object with invalid keys returns appropriate status code and message", () => {
     return request(app)
       .post("/api/articles/11/comments")
-      .send({ username: 27, body: 90000 })
+      .send({ username: 80, body: 90000 })
       .expect(400)
       .then((response) => {
         expect(response.body.msg).toEqual("Bad Request");
+      });
+  });
+  test("400: when passed an invalid article id responds with appropriate code and message", () => {
+    const newComment = {
+      username: "butter_bridge",
+      body: "Smuggling butter in the footwell of a 2cv",
+    };
+    return request(app)
+      .post("/api/articles/bananas/comments")
+      .send(newComment)
+      .expect(400)
+      .then((res) => {
+        expect(res.body.msg).toEqual("Bad Request");
+      });
+  });
+  test("404: when passed a valid but non existent article id responds with appropriate code and message", () => {
+    const newComment = {
+      username: "butter_bridge",
+      body: "Smuggling butter in the footwell of a 2cv",
+    };
+    return request(app)
+      .post("/api/articles/9000/comments")
+      .send(newComment)
+      .expect(404)
+      .then((res) => {
+        expect(res.body.msg).toEqual("Article Not Found");
+      });
+  });
+  test("404: when passed a non existent username responds with appropriate code and message", () => {
+    const newComment = {
+      username: "butter_bridge143",
+      body: "Smuggling butter in the footwell of a 2cv",
+    };
+    return request(app)
+      .post("/api/articles/11/comments")
+      .send(newComment)
+      .expect(404)
+      .then((res) => {
+        expect(res.body.msg).toEqual("User Not Found");
       });
   });
 });
@@ -220,7 +285,7 @@ describe("PATCH /api/articles/:article_id", () => {
         });
       });
   });
-  test("200: reduces votes if passed a miuns number", () => {
+  test("200: reduces votes if passed a minus number", () => {
     return request(app)
       .patch("/api/articles/11")
       .send({ inc_votes: -1 })
@@ -271,6 +336,23 @@ describe("UTIL checkIfArticleExists", () => {
   });
 });
 
+describe("UTIL checkIfValidUserExists", () => {
+  test("should reject with a 404 status if invoked with a non existent but valid username", () => {
+    expect(checkIfValidUserExists("timothy")).rejects.toMatchObject({
+      status: 404,
+      msg: "User Not Found",
+    });
+  });
+  test("should return with 400 status if passed invalid username ", () => {
+    expect(checkIfValidUserExists(9000)).rejects.toMatchObject({
+      status: 400,
+      msg: "Bad Request",
+    });
+  });
+  test("should return undefined if passed a legitimate username", () => {
+    expect(checkIfValidUserExists("butter_bridge")).resolves.toBe(undefined);
+  });
+});
 describe("404: not found", () => {
   test("should return 404 with appropriate message when given an non-existant endpoint", () => {
     return request(app)

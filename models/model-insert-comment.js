@@ -1,8 +1,14 @@
 const db = require("../db/connection.js");
-const { checkIfArticleExists } = require("./model-utils.js");
+const {
+  checkIfArticleExists,
+  checkIfValidUserExists,
+} = require("./model-utils.js");
 
 function insertCommentsByArticleId(articleId, newComment) {
   return checkIfArticleExists(articleId)
+    .then(() => {
+      return checkIfValidUserExists(newComment.username);
+    })
     .then(() => {
       return db.query(
         "INSERT INTO comments (author, body, article_id) VALUES ($1,$2,$3) RETURNING *",
