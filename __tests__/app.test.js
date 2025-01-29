@@ -8,6 +8,7 @@ const testData = require("../db/data/test-data/index.js");
 const {
   checkIfArticleExists,
   checkIfValidUserExists,
+  checkIfCommentExists,
 } = require("../models/model-utils.js");
 /* Set up your beforeEach & afterAll functions here */
 beforeEach(() => {
@@ -324,6 +325,33 @@ describe("PATCH /api/articles/:article_id", () => {
   });
 });
 
+describe("DELETE /api/comments/:comment_id", () => {
+  test("204: returns correct status and no content", () => {
+    return request(app)
+      .delete("/api/comments/1")
+      .expect(204)
+      .then((res) => {
+        expect(res.body).toEqual({});
+      });
+  });
+  test("400: when passed an invalid comment id responds with appropriate code and message", () => {
+    return request(app)
+      .delete("/api/comments/kittens")
+      .expect(400)
+      .then((res) => {
+        expect(res.body.msg).toEqual("Bad Request");
+      });
+  });
+  test("404: when passed a valid but non existent comment id responds with appropriate code and message", () => {
+    return request(app)
+      .delete("/api/comments/9000")
+      .expect(404)
+      .then((res) => {
+        expect(res.body.msg).toEqual("Comment Not Found");
+      });
+  });
+});
+
 describe("UTIL checkIfArticleExists", () => {
   test("should reject with a 404 status if invoked with a non existent but valid article ID ", () => {
     expect(checkIfArticleExists(9000)).rejects.toMatchObject({
@@ -353,6 +381,19 @@ describe("UTIL checkIfValidUserExists", () => {
     expect(checkIfValidUserExists("butter_bridge")).resolves.toBe(undefined);
   });
 });
+
+describe("UTIL checkIfCommentExists", () => {
+  test("should reject with a 404 status if invoked with a non existent but valid comment ID ", () => {
+    expect(checkIfCommentExists(9000)).rejects.toMatchObject({
+      status: 404,
+      msg: "Comment Not Found",
+    });
+  });
+  test("should return undefined if passed a legitimate comment ID", () => {
+    expect(checkIfCommentExists(1)).resolves.toBe(undefined);
+  });
+});
+
 describe("404: not found", () => {
   test("should return 404 with appropriate message when given an non-existant endpoint", () => {
     return request(app)

@@ -15,6 +15,9 @@ const {
 } = require("./error-handling.js");
 const { postCommentByArticleID } = require("./controllers/control-post-api.js");
 const { patchVotesByArticleId } = require("./controllers/control-patch-api.js");
+const {
+  deleteCommentByCommentID,
+} = require("./controllers/control-delete-api.js");
 
 app.get("/api", getApi);
 app.get("/api/topics", getTopics);
@@ -25,6 +28,8 @@ app.get("/api/articles/:article_id/comments", getCommentsByArticleId);
 app.post("/api/articles/:article_id/comments", postCommentByArticleID);
 
 app.patch("/api/articles/:article_id", patchVotesByArticleId);
+
+app.delete("/api/comments/:comment_id", deleteCommentByCommentID);
 
 app.all("/*", (req, res) => {
   res.status(404).send({ msg: "URL not found" });
