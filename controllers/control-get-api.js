@@ -8,6 +8,7 @@ const {
   selectCommentsByArticleId,
 } = require("../models/model-select-comments.js");
 const selectTopics = require("../models/model-select-topics.js");
+const selectUsers = require("../models/model-select-users.js");
 
 exports.getApi = (req, res, next) => {
   res
@@ -21,7 +22,7 @@ exports.getApi = (req, res, next) => {
 exports.getTopics = (req, res, next) => {
   selectTopics()
     .then((topics) => {
-      res.status(200).send({ topics: topics.rows });
+      res.status(200).send({ topics: topics });
     })
     .catch((err) => {
       next(err);
@@ -56,6 +57,16 @@ exports.getCommentsByArticleId = (req, res, next) => {
   selectCommentsByArticleId(articleId)
     .then((comments) => {
       res.status(200).send({ comments: comments });
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
+exports.getUsers = (req, res, next) => {
+  selectUsers()
+    .then((users) => {
+      res.status(200).send({ users: users });
     })
     .catch((err) => {
       next(err);
