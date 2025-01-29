@@ -51,19 +51,20 @@ describe("GET /api/topics", () => {
 describe("GET: /api/articles/:article_id", () => {
   test("200: responds with the corresponding article object to the article id", () => {
     return request(app)
-      .get("/api/articles/11")
+      .get("/api/articles/9")
       .expect(200)
       .then((res) => {
         expect(res.body.article).toEqual({
-          author: "icellusedkars",
-          title: "Am I a cat?",
-          article_id: 11,
-          body: "Having run out of ideas for articles, I am staring at the wall blankly, like a cat. Does this make me a cat?",
+          author: "butter_bridge",
+          title: "They're not exactly dogs, are they?",
+          article_id: 9,
+          body: "Well? Think about it.",
           topic: "mitch",
-          created_at: "2020-01-15T22:21:00.000Z",
+          created_at: "2020-06-06T09:10:00.000Z",
           votes: 0,
           article_img_url:
             "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+          comment_count: 2,
         });
       });
   });
