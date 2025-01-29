@@ -112,7 +112,7 @@ describe("GET /api/articles", () => {
       });
   });
 });
-describe("GET /api/articles(queries)", () => {
+describe("GET /api/articles(sort queries)", () => {
   test("200: when passed queries to change sorting order to ascending response is sorted", () => {
     return request(app)
       .get("/api/articles?order=asc")
@@ -141,6 +141,41 @@ describe("GET /api/articles(queries)", () => {
       .expect(400)
       .then((res) => {
         expect(res.body.msg).toEqual("Bad Query");
+      });
+  });
+});
+
+describe("GET /api/articles(filter queries)", () => {
+  test("200: when passed topic filter queries to only return articles with that topic", () => {
+    return request(app)
+      .get("/api/articles?topic=cats")
+      .expect(200)
+      .then((res) => {
+        res.body.articles.forEach((article) => {
+          expect(article.topic).toEqual("cats");
+        });
+      });
+  });
+  test("200: when passed a filter and queries to change what the articles are sorted by and the order the response is sorted and filtered", () => {
+    return request(app)
+      .get("/api/articles?&topic=mitchsorted_by=author&order=asc")
+      .expect(200)
+      .then((res) => {
+        expect(res.body.articles).toBeSorted({
+          ascending: true,
+          key: "author",
+        });
+        res.body.articles.forEach((article) => {
+          expect(article.topic).toEqual("cats");
+        });
+      });
+  });
+  test("200: when passed a valid filter that returns 0 matches an empty array is returned", () => {
+    return request(app)
+      .get("/api/articles?topic=cooking")
+      .expect(200)
+      .then((res) => {
+        expect(res.body.articles).toEqual([]);
       });
   });
 });
