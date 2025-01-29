@@ -112,6 +112,39 @@ describe("GET /api/articles", () => {
       });
   });
 });
+describe("GET /api/articles(queries)", () => {
+  test("200: when passed queries to change sorting order to ascending response is sorted", () => {
+    return request(app)
+      .get("/api/articles?order=asc")
+      .expect(200)
+      .then((res) => {
+        expect(res.body.articles).toBeSorted({
+          ascending: true,
+          key: "created_at",
+        });
+      });
+  });
+  test("200: when passed queries to change what the articles are sorted by and the order the response is sorted", () => {
+    return request(app)
+      .get("/api/articles?sorted_by=author&order=asc")
+      .expect(200)
+      .then((res) => {
+        expect(res.body.articles).toBeSorted({
+          ascending: true,
+          key: "author",
+        });
+      });
+  });
+  test("400: when passed queries not within the bounds of the database columns appropriate status and respone is provided", () => {
+    return request(app)
+      .get("/api/articles?sorted_by=SQTOINJECT&order=AMHACKER")
+      .expect(400)
+      .then((res) => {
+        expect(res.body.msg).toEqual("Bad Query");
+      });
+  });
+});
+
 describe("GET /api/articles/:article_id/comments", () => {
   test("200: responds with an array of comment objects,sorted by date in decending order", () => {
     return request(app)
