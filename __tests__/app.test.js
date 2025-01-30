@@ -144,6 +144,22 @@ describe("GET /api/articles(sort queries)", () => {
         expect(res.body.msg).toEqual("Bad Query");
       });
   });
+  test("400: when passed single sort by query not within the bounds of the database columns appropriate status and respone is provided", () => {
+    return request(app)
+      .get("/api/articles?sorted_by=SQTOINJECT")
+      .expect(400)
+      .then((res) => {
+        expect(res.body.msg).toEqual("Bad Query");
+      });
+  });
+  test("400: when passed single order query not within the bounds of the database columns appropriate status and respone is provided", () => {
+    return request(app)
+      .get("/api/articles?order=SQTOINJECT")
+      .expect(400)
+      .then((res) => {
+        expect(res.body.msg).toEqual("Bad Query");
+      });
+  });
 });
 
 describe("GET /api/articles(filter queries)", () => {

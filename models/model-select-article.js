@@ -35,7 +35,7 @@ function selectArticles(order = "desc", sortedBy = "created_at", topic) {
     queryValues.push(topic);
     queryStr += " WHERE topic = $1 ";
   }
-  if (!greenlist.includes(sortedBy) && !greenlist.includes(order)) {
+  if (!greenlist.includes(sortedBy) || !greenlist.includes(order)) {
     return Promise.reject({ status: 400, msg: "Bad Query" });
   } else {
     queryStr += groupByArticle;
