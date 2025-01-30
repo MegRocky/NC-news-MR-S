@@ -382,6 +382,46 @@ describe("articles endpoints", () => {
     });
   });
 });
+
+describe("PATCH /api/comments/:comment_id", () => {
+  test("200: increments votes with the object passed and returns the updated comment", () => {
+    return request(app)
+      .patch("/api/comments/11")
+      .send({ inc_votes: 1 })
+      .expect(200)
+      .then((res) => {
+        expect(res.body.comment.votes).toEqual(1);
+      });
+  });
+  test("200: reduces votes if passed a minus number", () => {
+    return request(app)
+      .patch("/api/comments/11")
+      .send({ inc_votes: -1 })
+      .expect(200)
+      .then((res) => {
+        expect(res.body.comment.votes).toEqual(-1);
+      });
+  });
+  test("400: when passed an invalid object returns appropriate status code and message", () => {
+    return request(app)
+      .patch("/api/comments/11")
+      .send({})
+      .expect(400)
+      .then((res) => {
+        expect(res.body.msg).toEqual("Bad Request");
+      });
+  });
+  test("400: when passed an object with an invalid value returns appropriate status code and message", () => {
+    return request(app)
+      .patch("/api/comments/11")
+      .send({ inc_votes: "buttons" })
+      .expect(400)
+      .then((res) => {
+        expect(res.body.msg).toEqual("Bad Request");
+      });
+  });
+});
+
 describe("DELETE /api/comments/:comment_id", () => {
   test("204: returns correct status and no content", () => {
     return request(app)

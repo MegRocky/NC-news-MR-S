@@ -1,5 +1,8 @@
 const db = require("../db/connection.js");
-const { checkIfArticleExists } = require("./model-utils.js");
+const {
+  checkIfArticleExists,
+  checkIfCommentExists,
+} = require("./model-utils.js");
 
 function updateVotesByArticleId(articleId, incrementNum) {
   return checkIfArticleExists(articleId)
@@ -14,4 +17,17 @@ function updateVotesByArticleId(articleId, incrementNum) {
     });
 }
 
-module.exports = { updateVotesByArticleId };
+function updateVotesByCommentId(commentId, incrementNum) {
+  return checkIfCommentExists(commentId)
+    .then(() => {
+      return db.query(
+        "UPDATE comments SET votes = votes + $1 WHERE comment_id = $2 RETURNING *",
+        [incrementNum, commentId]
+      );
+    })
+    .then((res) => {
+      return res.rows[0];
+    });
+}
+
+module.exports = { updateVotesByArticleId, updateVotesByCommentId };
