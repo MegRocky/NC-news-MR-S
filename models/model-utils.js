@@ -1,4 +1,3 @@
-const { string } = require("pg-format");
 const db = require("../db/connection.js");
 
 function checkIfArticleExists(id) {
@@ -20,7 +19,7 @@ function checkIfValidUserExists(username) {
       if (userQ.rowCount === 0) {
         return Promise.reject({ status: 404, msg: "User Not Found" });
       } else {
-        return { approved: true };
+        return userQ;
       }
     });
 }
