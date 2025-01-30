@@ -8,7 +8,10 @@ const {
   selectCommentsByArticleId,
 } = require("../models/model-select-comments.js");
 const selectTopics = require("../models/model-select-topics.js");
-const selectUsers = require("../models/model-select-users.js");
+const {
+  selectUsers,
+  selectUsersByUsername,
+} = require("../models/model-select-users.js");
 
 exports.getApi = (req, res, next) => {
   res
@@ -71,6 +74,17 @@ exports.getUsers = (req, res, next) => {
   selectUsers()
     .then((users) => {
       res.status(200).send({ users: users });
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
+exports.getUsersByUsername = (req, res, next) => {
+  const username = req.params.username;
+  selectUsersByUsername(username)
+    .then((users) => {
+      res.status(200).send({ user: users });
     })
     .catch((err) => {
       next(err);
