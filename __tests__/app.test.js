@@ -270,7 +270,7 @@ describe("articles endpoints", () => {
         .get("/api/articles/1/comments")
         .expect(200)
         .then((res) => {
-          expect(res.body.comments.length).toBe(11);
+          expect(res.body.comments.length).toBe(10);
           expect(res.body.comments).toBeSorted({
             descending: true,
             key: "created_at",
@@ -314,262 +314,313 @@ describe("articles endpoints", () => {
         });
     });
   });
-  describe("POST /api/articles/:article_id/comments", () => {
-    test("201: should respond with the added comment", () => {
-      const newComment = {
-        username: "butter_bridge",
-        body: "Smuggling butter in the footwell of a 2cv",
-      };
+  describe("GET /api/articles/:article_id/comments(page queries)", () => {
+    test("200: when passed pagination query, return 10 items by default with total count property on the object", () => {
       return request(app)
-        .post("/api/articles/11/comments")
-        .send(newComment)
-        .expect(201)
-        .then((res) => {
-          expect(res.body.comment).toEqual(
-            expect.objectContaining({
-              comment_id: expect.any(Number),
-              votes: 0,
-              article_id: 11,
-              author: newComment.username,
-              created_at: expect.any(String),
-              body: newComment.body,
-            })
-          );
-        });
-    });
-    test("201:should ignore addtional properties on the body of comment request", () => {
-      const newCommentExtraProperty = {
-        username: "butter_bridge",
-        body: "Smuggling butter in the footwell of a 2cv",
-        location: "French alsace border",
-      };
-      return request(app)
-        .post("/api/articles/11/comments")
-        .send(newCommentExtraProperty)
-        .expect(201)
-        .then((res) => {
-          expect(res.body.comment).toEqual(
-            expect.objectContaining({
-              comment_id: expect.any(Number),
-              votes: 0,
-              article_id: 11,
-              author: newCommentExtraProperty.username,
-              created_at: expect.any(String),
-              body: newCommentExtraProperty.body,
-            })
-          );
-        });
-    });
-    test("400: when passed an invalid object returns appropriate status code and message", () => {
-      return request(app)
-        .post("/api/articles/11/comments")
-        .send({})
-        .expect(400)
-        .then((response) => {
-          expect(response.body.msg).toEqual("Bad Request");
-        });
-    });
-    test("400: when passed an invalid article id responds with appropriate code and message", () => {
-      const newComment = {
-        username: "butter_bridge",
-        body: "Smuggling butter in the footwell of a 2cv",
-      };
-      return request(app)
-        .post("/api/articles/bananas/comments")
-        .send(newComment)
-        .expect(400)
-        .then((res) => {
-          expect(res.body.msg).toEqual("Bad Request");
-        });
-    });
-    test("404: when passed a valid but non existent article id responds with appropriate code and message", () => {
-      const newComment = {
-        username: "butter_bridge",
-        body: "Smuggling butter in the footwell of a 2cv",
-      };
-      return request(app)
-        .post("/api/articles/9000/comments")
-        .send(newComment)
-        .expect(404)
-        .then((res) => {
-          expect(res.body.msg).toEqual("Article Not Found");
-        });
-    });
-    test("404: when passed a non existent username responds with appropriate code and message", () => {
-      const newComment = {
-        username: "butter_bridge143",
-        body: "Smuggling butter in the footwell of a 2cv",
-      };
-      return request(app)
-        .post("/api/articles/11/comments")
-        .send(newComment)
-        .expect(404)
-        .then((res) => {
-          expect(res.body.msg).toEqual("User Not Found");
-        });
-    });
-  });
-  describe("PATCH /api/articles/:article_id", () => {
-    test("200: increments votes with the object passed and returns the updated article", () => {
-      return request(app)
-        .patch("/api/articles/11")
-        .send({ inc_votes: 1 })
+        .get("/api/articles/1/comments?p=1")
         .expect(200)
         .then((res) => {
-          expect(res.body.article.votes).toEqual(1);
+          expect(res.body.comments.length).toEqual(10);
         });
     });
-    test("200: reduces votes if passed a minus number", () => {
+    test("200: when passed pagination query past 1, return the page of appropriate items by default with total count property on the object", () => {
       return request(app)
-        .patch("/api/articles/11")
-        .send({ inc_votes: -1 })
+        .get("/api/articles/1/comments?p=2")
         .expect(200)
         .then((res) => {
-          expect(res.body.article.votes).toEqual(-1);
+          expect(res.body.comments.length).toEqual(1);
         });
     });
-    test("400: when passed an invalid object returns appropriate status code and message", () => {
+    test("200: when passed pagination query past the limit of articles return empty array", () => {
       return request(app)
-        .patch("/api/articles/11")
-        .send({})
+        .get("/api/articles/1/comments?p=3")
+        .expect(200)
+        .then((res) => {
+          expect(res.body.comments.length).toEqual(0);
+        });
+    });
+    test("200: when passed limit query the limit of articles reflects query", () => {
+      return request(app)
+        .get("/api/articles/1/comments?p=1&limit=2")
+        .expect(200)
+        .then((res) => {
+          expect(res.body.comments.length).toEqual(2);
+        });
+    });
+    test("400: when passed invalid limit query returns appropriate error status and message", () => {
+      return request(app)
+        .get("/api/articles/1/comments?limit=page")
         .expect(400)
         .then((res) => {
-          expect(res.body.msg).toEqual("Bad Request");
+          expect(res.body.msg).toEqual("Bad Query");
         });
     });
-    test("400: when passed an object with an invalid value returns appropriate status code and message", () => {
+    test("400: when passed invalid page query returns appropriate error status and message", () => {
       return request(app)
-        .patch("/api/articles/11")
-        .send({ inc_votes: "buttons" })
+        .get("/api/articles/1/comments?p=page")
         .expect(400)
         .then((res) => {
-          expect(res.body.msg).toEqual("Bad Request");
+          expect(res.body.msg).toEqual("Bad Query");
         });
     });
-  });
-  describe("POST /api/articles", () => {
-    test("201: should respond with the added article", () => {
-      const newArticle = {
-        author: "butter_bridge",
-        title: "Best Places to Get Butter",
-        body: "the shops, a farm,",
-        topic: "cats",
-        article_img_url:
-          "https://cdna.artstation.com/p/assets/images/images/049/545/024/medium/claire-lin-img-0808.jpg?1652745962",
-      };
-      return request(app)
-        .post("/api/articles")
-        .send(newArticle)
-        .expect(201)
-        .then((res) => {
-          expect(res.body.article).toEqual(
-            expect.objectContaining({
-              article_id: expect.any(Number),
-              votes: 0,
-              article_id: expect.any(Number),
-              author: newArticle.author,
-              created_at: expect.any(String),
-              body: newArticle.body,
-              article_img_url: newArticle.article_img_url,
-            })
-          );
-        });
-    });
-    test("201: should fill in a default image url if one is not provided", () => {
-      const newArticle = {
-        author: "butter_bridge",
-        title: "Best Places to Get Butter",
-        body: "the shops, a farm,",
-        topic: "cats",
-      };
-      return request(app)
-        .post("/api/articles")
-        .send(newArticle)
-        .expect(201)
-        .then((res) => {
-          expect(res.body.article).toEqual(
-            expect.objectContaining({
-              article_id: expect.any(Number),
-              votes: 0,
-              article_id: expect.any(Number),
-              author: newArticle.author,
-              created_at: expect.any(String),
-              body: newArticle.body,
-              article_img_url:
-                "https://images.pexels.com/photos/11035380/pexels-photo-11035380.jpeg?w=700&h=700",
-            })
-          );
-        });
-    });
-    test("201:should ignore addtional properties on the body of comment request", () => {
-      const newArticleExtraProperty = {
-        author: "butter_bridge",
-        title: "Best Places to Get Butter",
-        body: "the shops, a farm,",
-        topic: "cats",
-        article_img_url:
-          "https://cdna.artstation.com/p/assets/images/images/049/545/024/medium/claire-lin-img-0808.jpg?1652745962",
-        location: "French alsace border",
-      };
-      return request(app)
-        .post("/api/articles")
-        .send(newArticleExtraProperty)
-        .expect(201)
-        .then((res) => {
-          expect(res.body.article).toEqual(
-            expect.objectContaining({
-              article_id: expect.any(Number),
-              votes: 0,
-              article_id: expect.any(Number),
-              author: newArticleExtraProperty.author,
-              created_at: expect.any(String),
-              body: newArticleExtraProperty.body,
-              article_img_url: newArticleExtraProperty.article_img_url,
-            })
-          );
-        });
-    });
-    test("400: when passed an invalid object returns appropriate status code and message", () => {
-      return request(app)
-        .post("/api/articles")
-        .send({})
-        .expect(400)
-        .then((response) => {
-          expect(response.body.msg).toEqual("Bad Request");
-        });
-    });
-    test("404: when passed a non existent username responds with appropriate code and message", () => {
-      const newArticle = {
-        author: "butter_bridge200",
-        title: "Best Places to Get Butter",
-        body: "the shops, a farm,",
-        topic: "cats",
-        article_img_url: "google.com",
-      };
-      return request(app)
-        .post("/api/articles")
-        .send(newArticle)
-        .expect(404)
-        .then((res) => {
-          expect(res.body.msg).toEqual("User Not Found");
-        });
+    describe("POST /api/articles/:article_id/comments", () => {
+      test("201: should respond with the added comment", () => {
+        const newComment = {
+          username: "butter_bridge",
+          body: "Smuggling butter in the footwell of a 2cv",
+        };
+        return request(app)
+          .post("/api/articles/11/comments")
+          .send(newComment)
+          .expect(201)
+          .then((res) => {
+            expect(res.body.comment).toEqual(
+              expect.objectContaining({
+                comment_id: expect.any(Number),
+                votes: 0,
+                article_id: 11,
+                author: newComment.username,
+                created_at: expect.any(String),
+                body: newComment.body,
+              })
+            );
+          });
+      });
+      test("201:should ignore addtional properties on the body of comment request", () => {
+        const newCommentExtraProperty = {
+          username: "butter_bridge",
+          body: "Smuggling butter in the footwell of a 2cv",
+          location: "French alsace border",
+        };
+        return request(app)
+          .post("/api/articles/11/comments")
+          .send(newCommentExtraProperty)
+          .expect(201)
+          .then((res) => {
+            expect(res.body.comment).toEqual(
+              expect.objectContaining({
+                comment_id: expect.any(Number),
+                votes: 0,
+                article_id: 11,
+                author: newCommentExtraProperty.username,
+                created_at: expect.any(String),
+                body: newCommentExtraProperty.body,
+              })
+            );
+          });
+      });
+      test("400: when passed an invalid object returns appropriate status code and message", () => {
+        return request(app)
+          .post("/api/articles/11/comments")
+          .send({})
+          .expect(400)
+          .then((response) => {
+            expect(response.body.msg).toEqual("Bad Request");
+          });
+      });
+      test("400: when passed an invalid article id responds with appropriate code and message", () => {
+        const newComment = {
+          username: "butter_bridge",
+          body: "Smuggling butter in the footwell of a 2cv",
+        };
+        return request(app)
+          .post("/api/articles/bananas/comments")
+          .send(newComment)
+          .expect(400)
+          .then((res) => {
+            expect(res.body.msg).toEqual("Bad Request");
+          });
+      });
+      test("404: when passed a valid but non existent article id responds with appropriate code and message", () => {
+        const newComment = {
+          username: "butter_bridge",
+          body: "Smuggling butter in the footwell of a 2cv",
+        };
+        return request(app)
+          .post("/api/articles/9000/comments")
+          .send(newComment)
+          .expect(404)
+          .then((res) => {
+            expect(res.body.msg).toEqual("Article Not Found");
+          });
+      });
+      test("404: when passed a non existent username responds with appropriate code and message", () => {
+        const newComment = {
+          username: "butter_bridge143",
+          body: "Smuggling butter in the footwell of a 2cv",
+        };
+        return request(app)
+          .post("/api/articles/11/comments")
+          .send(newComment)
+          .expect(404)
+          .then((res) => {
+            expect(res.body.msg).toEqual("User Not Found");
+          });
+      });
     });
 
-    test("404: when passed a non existent topic responds with appropriate code and message", () => {
-      const newArticle = {
-        author: "butter_bridge",
-        title: "Best Places to Get Butter",
-        body: "the shops, a farm,",
-        topic: "butter",
-        article_img_url: "google.com",
-      };
-      return request(app)
-        .post("/api/articles")
-        .send(newArticle)
-        .expect(404)
-        .then((res) => {
-          expect(res.body.msg).toEqual("Topic Not Found");
-        });
+    describe("PATCH /api/articles/:article_id", () => {
+      test("200: increments votes with the object passed and returns the updated article", () => {
+        return request(app)
+          .patch("/api/articles/11")
+          .send({ inc_votes: 1 })
+          .expect(200)
+          .then((res) => {
+            expect(res.body.article.votes).toEqual(1);
+          });
+      });
+      test("200: reduces votes if passed a minus number", () => {
+        return request(app)
+          .patch("/api/articles/11")
+          .send({ inc_votes: -1 })
+          .expect(200)
+          .then((res) => {
+            expect(res.body.article.votes).toEqual(-1);
+          });
+      });
+      test("400: when passed an invalid object returns appropriate status code and message", () => {
+        return request(app)
+          .patch("/api/articles/11")
+          .send({})
+          .expect(400)
+          .then((res) => {
+            expect(res.body.msg).toEqual("Bad Request");
+          });
+      });
+      test("400: when passed an object with an invalid value returns appropriate status code and message", () => {
+        return request(app)
+          .patch("/api/articles/11")
+          .send({ inc_votes: "buttons" })
+          .expect(400)
+          .then((res) => {
+            expect(res.body.msg).toEqual("Bad Request");
+          });
+      });
+    });
+    describe("POST /api/articles", () => {
+      test("201: should respond with the added article", () => {
+        const newArticle = {
+          author: "butter_bridge",
+          title: "Best Places to Get Butter",
+          body: "the shops, a farm,",
+          topic: "cats",
+          article_img_url:
+            "https://cdna.artstation.com/p/assets/images/images/049/545/024/medium/claire-lin-img-0808.jpg?1652745962",
+        };
+        return request(app)
+          .post("/api/articles")
+          .send(newArticle)
+          .expect(201)
+          .then((res) => {
+            expect(res.body.article).toEqual(
+              expect.objectContaining({
+                article_id: expect.any(Number),
+                votes: 0,
+                article_id: expect.any(Number),
+                author: newArticle.author,
+                created_at: expect.any(String),
+                body: newArticle.body,
+                article_img_url: newArticle.article_img_url,
+              })
+            );
+          });
+      });
+      test("201: should fill in a default image url if one is not provided", () => {
+        const newArticle = {
+          author: "butter_bridge",
+          title: "Best Places to Get Butter",
+          body: "the shops, a farm,",
+          topic: "cats",
+        };
+        return request(app)
+          .post("/api/articles")
+          .send(newArticle)
+          .expect(201)
+          .then((res) => {
+            expect(res.body.article).toEqual(
+              expect.objectContaining({
+                article_id: expect.any(Number),
+                votes: 0,
+                article_id: expect.any(Number),
+                author: newArticle.author,
+                created_at: expect.any(String),
+                body: newArticle.body,
+                article_img_url:
+                  "https://images.pexels.com/photos/11035380/pexels-photo-11035380.jpeg?w=700&h=700",
+              })
+            );
+          });
+      });
+      test("201:should ignore addtional properties on the body of comment request", () => {
+        const newArticleExtraProperty = {
+          author: "butter_bridge",
+          title: "Best Places to Get Butter",
+          body: "the shops, a farm,",
+          topic: "cats",
+          article_img_url:
+            "https://cdna.artstation.com/p/assets/images/images/049/545/024/medium/claire-lin-img-0808.jpg?1652745962",
+          location: "French alsace border",
+        };
+        return request(app)
+          .post("/api/articles")
+          .send(newArticleExtraProperty)
+          .expect(201)
+          .then((res) => {
+            expect(res.body.article).toEqual(
+              expect.objectContaining({
+                article_id: expect.any(Number),
+                votes: 0,
+                article_id: expect.any(Number),
+                author: newArticleExtraProperty.author,
+                created_at: expect.any(String),
+                body: newArticleExtraProperty.body,
+                article_img_url: newArticleExtraProperty.article_img_url,
+              })
+            );
+          });
+      });
+      test("400: when passed an invalid object returns appropriate status code and message", () => {
+        return request(app)
+          .post("/api/articles")
+          .send({})
+          .expect(400)
+          .then((response) => {
+            expect(response.body.msg).toEqual("Bad Request");
+          });
+      });
+      test("404: when passed a non existent username responds with appropriate code and message", () => {
+        const newArticle = {
+          author: "butter_bridge200",
+          title: "Best Places to Get Butter",
+          body: "the shops, a farm,",
+          topic: "cats",
+          article_img_url: "google.com",
+        };
+        return request(app)
+          .post("/api/articles")
+          .send(newArticle)
+          .expect(404)
+          .then((res) => {
+            expect(res.body.msg).toEqual("User Not Found");
+          });
+      });
+
+      test("404: when passed a non existent topic responds with appropriate code and message", () => {
+        const newArticle = {
+          author: "butter_bridge",
+          title: "Best Places to Get Butter",
+          body: "the shops, a farm,",
+          topic: "butter",
+          article_img_url: "google.com",
+        };
+        return request(app)
+          .post("/api/articles")
+          .send(newArticle)
+          .expect(404)
+          .then((res) => {
+            expect(res.body.msg).toEqual("Topic Not Found");
+          });
+      });
     });
   });
 });

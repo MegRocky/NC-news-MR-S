@@ -31,7 +31,7 @@ exports.getArticleById = (req, res, next) => {
 
   selectArticleById(articleId)
     .then((article) => {
-      console.log(article);
+ 
       res.status(200).send({ article: article });
     })
     .catch((err) => {
@@ -57,8 +57,9 @@ exports.getArticles = (req, res, next) => {
 
 exports.getCommentsByArticleId = (req, res, next) => {
   const articleId = req.params.article_id;
-
-  selectCommentsByArticleId(articleId)
+  const page = req.query.p;
+  const limit = req.query.limit;
+  selectCommentsByArticleId(articleId, page, limit)
     .then((comments) => {
       res.status(200).send({ comments: comments });
     })
