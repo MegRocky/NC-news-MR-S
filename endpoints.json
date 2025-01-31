@@ -11,14 +11,13 @@
   },
   "GET /api/articles": {
     "description": "serves an array of all articles",
-    "queries": ["author", "topic", "sort_by", "order"],
+    "queries": ["topic", "sort_by", "order", "p", "limit"],
     "exampleResponse": {
       "articles": [
         {
           "title": "Seafood substitutions are increasing",
           "topic": "cooking",
           "author": "weegembump",
-          "body": "Text from the article..",
           "created_at": "2018-05-30T15:59:13.341Z",
           "votes": 0,
           "comment_count": 6
@@ -129,6 +128,26 @@
         "votes": 1,
         "created_at": "2020-11-03T21:00:00.000Z"
       }
+    }
+  },
+  "POST /api/articles": {
+    "description": "adds a new article",
+    "exampleInput": {
+      "author": "butter_bridge",
+      "title": "Best Places to Get Butter",
+      "body": "the shops, a farm,",
+      "topic": "cats",
+      "article_img_url": "https://cdna.artstation.com/p/assets/images/images/049/545/024/medium/claire-lin-img-0808.jpg?1652745962"
+    },
+    "exampleResponse": {
+      "article_id": 11,
+      "title": "Best Places to Get Butter",
+      "topic": "cats",
+      "author": "butter_bridge",
+      "body": "the shops, a farm,",
+      "created_at": "2020-01-15T22:21:00.000Z",
+      "votes": 0,
+      "article_img_url": "https://cdna.artstation.com/p/assets/images/images/049/545/024/medium/claire-lin-img-0808.jpg?1652745962"
     }
   }
 }

@@ -176,7 +176,7 @@ describe("articles endpoints", () => {
     });
     test("200: when passed a filter and queries to change what the articles are sorted by and the order the response is sorted and filtered", () => {
       return request(app)
-        .get("/api/articles?&topic=mitchsorted_by=author&order=asc")
+        .get("/api/articles?&topic=mitch&sorted_by=author&order=asc")
         .expect(200)
         .then((res) => {
           expect(res.body.articles).toBeSorted({
@@ -184,7 +184,7 @@ describe("articles endpoints", () => {
             key: "author",
           });
           res.body.articles.forEach((article) => {
-            expect(article.topic).toEqual("cats");
+            expect(article.topic).toEqual("mitch");
           });
         });
     });
@@ -194,6 +194,73 @@ describe("articles endpoints", () => {
         .expect(200)
         .then((res) => {
           expect(res.body.articles).toEqual([]);
+        });
+    });
+  });
+  describe("GET /api/articles(page queries)", () => {
+    test("200: when passed pagination query, return 10 items by default with total count property on the object", () => {
+      return request(app)
+        .get("/api/articles?p=1")
+        .expect(200)
+        .then((res) => {
+          expect(res.body.articles.length).toEqual(10);
+          expect(res.body.total_count).toEqual(13);
+        });
+    });
+    test("200: when passed pagination query past 1, return the page of appropriate items by default with total count property on the object", () => {
+      return request(app)
+        .get("/api/articles?p=2")
+        .expect(200)
+        .then((res) => {
+          expect(res.body.articles.length).toEqual(3);
+          expect(res.body.total_count).toEqual(13);
+        });
+    });
+    test("200: when passed pagination query past the limit of articles return empty array", () => {
+      return request(app)
+        .get("/api/articles?p=3")
+        .expect(200)
+        .then((res) => {
+          expect(res.body.articles.length).toEqual(0);
+          expect(res.body.total_count).toEqual(0);
+        });
+    });
+    test("200: when passed limit query the limit of articles reflects query", () => {
+      return request(app)
+        .get("/api/articles?p=1&limit=2")
+        .expect(200)
+        .then((res) => {
+          expect(res.body.articles.length).toEqual(2);
+          expect(res.body.total_count).toEqual(13);
+        });
+    });
+    test("200: when passed pagination query, limit query, filter and sort query result reflects query", () => {
+      return request(app)
+        .get("/api/articles?p=2&limit=2&topic=mitch&sorted_by=author&order=asc")
+        .expect(200)
+        .then((res) => {
+          expect(res.body.articles.length).toEqual(2);
+          expect(res.body.total_count).toEqual(12);
+          expect(res.body.articles).toBeSorted({
+            ascending: true,
+            key: "author",
+          });
+        });
+    });
+    test("400: when passed invalid limit query returns appropriate error status and message", () => {
+      return request(app)
+        .get("/api/articles?limit=page")
+        .expect(400)
+        .then((res) => {
+          expect(res.body.msg).toEqual("Bad Query");
+        });
+    });
+    test("400: when passed invalid page query returns appropriate error status and message", () => {
+      return request(app)
+        .get("/api/articles?p=page")
+        .expect(400)
+        .then((res) => {
+          expect(res.body.msg).toEqual("Bad Query");
         });
     });
   });

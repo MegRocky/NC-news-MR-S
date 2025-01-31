@@ -31,6 +31,7 @@ exports.getArticleById = (req, res, next) => {
 
   selectArticleById(articleId)
     .then((article) => {
+      console.log(article);
       res.status(200).send({ article: article });
     })
     .catch((err) => {
@@ -42,10 +43,12 @@ exports.getArticles = (req, res, next) => {
   const order = req.query.order;
   const sortedBy = req.query.sorted_by;
   const topic = req.query.topic;
+  const page = req.query.p;
+  const limit = req.query.limit;
 
-  selectArticles(order, sortedBy, topic)
+  selectArticles(order, sortedBy, topic, page, limit)
     .then((articles) => {
-      res.status(200).send({ articles: articles });
+      res.status(200).send(articles);
     })
     .catch((err) => {
       next(err);
