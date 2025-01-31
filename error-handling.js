@@ -10,5 +10,6 @@ exports.idNotFound = (err, req, res, next) => {
   } else next(err);
 };
 exports.internalServerError = (err, req, res, next) => {
+  console.log(err);
   res.status(500).send({ msg: "Internal server error!" });
 };
