@@ -12,8 +12,8 @@ function updateVotesByArticleId(articleId, incrementNum) {
         [incrementNum, articleId]
       );
     })
-    .then((res) => {
-      return res.rows[0];
+    .then((article) => {
+      return article.rows[0];
     });
 }
 
@@ -25,8 +25,8 @@ function updateVotesByCommentId(commentId, incrementNum) {
         [incrementNum, commentId]
       );
     })
-    .then((res) => {
-      return res.rows[0];
+    .then((comment) => {
+      return comment.rows[0];
     });
 }
 

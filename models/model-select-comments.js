@@ -9,8 +9,8 @@ function selectCommentsByArticleId(id) {
         [id]
       );
     })
-    .then((res) => {
-      return res.rows;
+    .then((comments) => {
+      return comments.rows;
     });
 }
 

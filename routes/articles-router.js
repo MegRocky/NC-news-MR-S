@@ -10,9 +10,10 @@ const {
 
 const {
   postCommentByArticleID,
+  postNewArticle,
 } = require("../controllers/control-post-api.js");
 
-articleRouter.get("/", getArticles);
+articleRouter.route("/").get(getArticles).post(postNewArticle);
 
 articleRouter
   .route("/:article_id")
