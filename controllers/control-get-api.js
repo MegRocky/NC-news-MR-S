@@ -1,9 +1,3 @@
-const endpointsData = require("../endpoints.json");
-const {
-  selectArticleById,
-  selectArticles,
-} = require("../models/model-select-article.js");
-
 const {
   selectCommentsByArticleId,
 } = require("../models/model-select-comments.js");
@@ -12,14 +6,14 @@ const {
   selectUsers,
   selectUsersByUsername,
 } = require("../models/model-select-users.js");
+const endpointsData = require("../endpoints.json");
+const {
+  selectArticleById,
+  selectArticles,
+} = require("../models/model-select-article.js");
 
 exports.getApi = (req, res, next) => {
-  res
-    .status(200)
-    .send({ endpoints: endpointsData })
-    .catch((err) => {
-      next(err);
-    });
+  res.status(200).send({ endpoints: endpointsData });
 };
 
 exports.getTopics = (req, res, next) => {

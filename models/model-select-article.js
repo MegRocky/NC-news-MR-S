@@ -40,9 +40,8 @@ function selectArticles(order = "desc", sortedBy = "created_at", topic) {
   } else {
     queryStr += groupByArticle;
     queryStr += `ORDER BY ${sortedBy} ${order}`;
-
-    return db.query(queryStr, queryValues).then((res) => {
-      return res.rows;
+    return db.query(queryStr, queryValues).then((articles) => {
+      return articles.rows;
     });
   }
 }

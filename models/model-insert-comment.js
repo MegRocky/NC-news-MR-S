@@ -19,8 +19,8 @@ function insertCommentsByArticleId(articleId, newComment) {
         [newComment.username, newComment.body, articleId]
       );
     })
-    .then((res) => {
-      return res.rows[0];
+    .then((comment) => {
+      return comment.rows[0];
     });
 }
 

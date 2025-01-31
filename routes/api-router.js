@@ -1,4 +1,5 @@
-const apiRouter = require("express").Router();
+const express = require("express");
+const apiRouter = express.Router();
 const articleRouter = require("./articles-router.js");
 const topicsRouter = require("./topics-router.js");
 const commentsRouter = require("./comments-router.js");

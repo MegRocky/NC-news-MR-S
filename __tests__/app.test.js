@@ -9,6 +9,7 @@ const {
   checkIfArticleExists,
   checkIfValidUserExists,
   checkIfCommentExists,
+  checkIfTopicExists,
 } = require("../models/model-utils.js");
 /* Set up your beforeEach & afterAll functions here */
 beforeEach(() => {
@@ -162,7 +163,6 @@ describe("articles endpoints", () => {
         });
     });
   });
-
   describe("GET /api/articles(filter queries)", () => {
     test("200: when passed topic filter queries to only return articles with that topic", () => {
       return request(app)
@@ -197,7 +197,6 @@ describe("articles endpoints", () => {
         });
     });
   });
-
   describe("GET /api/articles/:article_id/comments", () => {
     test("200: responds with an array of comment objects,sorted by date in decending order", () => {
       return request(app)
@@ -381,6 +380,131 @@ describe("articles endpoints", () => {
         });
     });
   });
+  describe("POST /api/articles", () => {
+    test("201: should respond with the added article", () => {
+      const newArticle = {
+        author: "butter_bridge",
+        title: "Best Places to Get Butter",
+        body: "the shops, a farm,",
+        topic: "cats",
+        article_img_url:
+          "https://cdna.artstation.com/p/assets/images/images/049/545/024/medium/claire-lin-img-0808.jpg?1652745962",
+      };
+      return request(app)
+        .post("/api/articles")
+        .send(newArticle)
+        .expect(201)
+        .then((res) => {
+          expect(res.body.article).toEqual(
+            expect.objectContaining({
+              article_id: expect.any(Number),
+              votes: 0,
+              article_id: expect.any(Number),
+              author: newArticle.author,
+              created_at: expect.any(String),
+              body: newArticle.body,
+              article_img_url: newArticle.article_img_url,
+            })
+          );
+        });
+    });
+    test("201: should fill in a default image url if one is not provided", () => {
+      const newArticle = {
+        author: "butter_bridge",
+        title: "Best Places to Get Butter",
+        body: "the shops, a farm,",
+        topic: "cats",
+      };
+      return request(app)
+        .post("/api/articles")
+        .send(newArticle)
+        .expect(201)
+        .then((res) => {
+          expect(res.body.article).toEqual(
+            expect.objectContaining({
+              article_id: expect.any(Number),
+              votes: 0,
+              article_id: expect.any(Number),
+              author: newArticle.author,
+              created_at: expect.any(String),
+              body: newArticle.body,
+              article_img_url:
+                "https://images.pexels.com/photos/11035380/pexels-photo-11035380.jpeg?w=700&h=700",
+            })
+          );
+        });
+    });
+    test("201:should ignore addtional properties on the body of comment request", () => {
+      const newArticleExtraProperty = {
+        author: "butter_bridge",
+        title: "Best Places to Get Butter",
+        body: "the shops, a farm,",
+        topic: "cats",
+        article_img_url:
+          "https://cdna.artstation.com/p/assets/images/images/049/545/024/medium/claire-lin-img-0808.jpg?1652745962",
+        location: "French alsace border",
+      };
+      return request(app)
+        .post("/api/articles")
+        .send(newArticleExtraProperty)
+        .expect(201)
+        .then((res) => {
+          expect(res.body.article).toEqual(
+            expect.objectContaining({
+              article_id: expect.any(Number),
+              votes: 0,
+              article_id: expect.any(Number),
+              author: newArticleExtraProperty.author,
+              created_at: expect.any(String),
+              body: newArticleExtraProperty.body,
+              article_img_url: newArticleExtraProperty.article_img_url,
+            })
+          );
+        });
+    });
+    test("400: when passed an invalid object returns appropriate status code and message", () => {
+      return request(app)
+        .post("/api/articles")
+        .send({})
+        .expect(400)
+        .then((response) => {
+          expect(response.body.msg).toEqual("Bad Request");
+        });
+    });
+    test("404: when passed a non existent username responds with appropriate code and message", () => {
+      const newArticle = {
+        author: "butter_bridge200",
+        title: "Best Places to Get Butter",
+        body: "the shops, a farm,",
+        topic: "cats",
+        article_img_url: "google.com",
+      };
+      return request(app)
+        .post("/api/articles")
+        .send(newArticle)
+        .expect(404)
+        .then((res) => {
+          expect(res.body.msg).toEqual("User Not Found");
+        });
+    });
+
+    test("404: when passed a non existent topic responds with appropriate code and message", () => {
+      const newArticle = {
+        author: "butter_bridge",
+        title: "Best Places to Get Butter",
+        body: "the shops, a farm,",
+        topic: "butter",
+        article_img_url: "google.com",
+      };
+      return request(app)
+        .post("/api/articles")
+        .send(newArticle)
+        .expect(404)
+        .then((res) => {
+          expect(res.body.msg).toEqual("Topic Not Found");
+        });
+    });
+  });
 });
 
 describe("PATCH /api/comments/:comment_id", () => {
@@ -530,6 +654,19 @@ describe("UTILS", () => {
     });
     test("should return undefined if passed a legitimate comment ID", () => {
       expect(checkIfCommentExists(1)).resolves.toMatchObject({
+        approved: true,
+      });
+    });
+  });
+  describe("UTIL checkIfTopicExists", () => {
+    test("should reject with a 404 status if invoked with a non existent but valid topic slug ", () => {
+      expect(checkIfTopicExists("bears")).rejects.toMatchObject({
+        status: 404,
+        msg: "Topic Not Found",
+      });
+    });
+    test("should return undefined if passed a legitimate topic slug", () => {
+      expect(checkIfTopicExists("cats")).resolves.toMatchObject({
         approved: true,
       });
     });
