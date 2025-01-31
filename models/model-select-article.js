@@ -34,7 +34,6 @@ function selectArticles(
   ];
 
   if (!greenlist.includes(sortedBy) || !greenlist.includes(order)) {
-    console.log("hello");
     return Promise.reject({ status: 400, msg: "Bad Query" });
   }
 
@@ -43,7 +42,7 @@ function selectArticles(
   }
 
   let queryStr = `SELECT articles.author,title,articles.article_id,topic,articles.created_at,articles.votes,article_img_url,CAST(COUNT(comments.comment_id) AS int) AS comment_count, count(*) OVER () as total_count FROM articles LEFT JOIN comments ON comments.article_id = articles.article_id`;
-  const queryValues = assemleQueryValues(topic, p, limit);
+  const queryValues = assembleQueryValues(topic, p, limit);
 
   const groupByArticle = " GROUP BY (articles.article_id) ";
 
@@ -73,7 +72,7 @@ function selectArticles(
   });
 }
 
-function assemleQueryValues(topic, p, limit) {
+function assembleQueryValues(topic, p, limit) {
   const queryValues = [];
   if (topic) {
     queryValues.push(topic);
