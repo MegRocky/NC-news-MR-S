@@ -4,7 +4,7 @@
 
 This project uses Node.js, PostgreSQL and an express.js server to seed and build endpoints for an API that provides the required data for an interactive news site.
 
-[Hosted version available here](https://nc-news-mr-s.onrender.com)
+[Hosted version available here](https://nc-news-mr-s.onrender.com/api)
 
 ## How to use this repo
 
